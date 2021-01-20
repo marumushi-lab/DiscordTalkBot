@@ -58,8 +58,9 @@ def creat_WAV(inputText, sid, cv, r, t):
     inputText = urlAbb(inputText)   # URLなら省略
     inputText = remove_picture(inputText)   # 画像なら読み上げない
     inputText = user_custam(inputText, sid)   # ユーザ登録した文字を読み替える
-    if len(inputText) != 0:
-        print(inputText)
+    text_check = re.sub(r"[ 　\n]", "", inputText)
+
+    if len(text_check) != 0:
         input_file = f'{DCTB}guild/{sid}/{t}input.txt'
         print(input_file)
 

@@ -88,8 +88,8 @@ async def iocheck(sid, vc, msg):
     iolog = data.get(sid,'t')
     if iolog == 't':
         t = str(time.perf_counter()).replace('.', '')
-        await add_oplist(sid, t)
         if creat_WAV(msg, sid, 'f001', '1.0', t):
+            await add_oplist(sid, t)
             source = discord.FFmpegPCMAudio(f'{DCTB}guild/{sid}/{t}output.wav')
             await chk_play(vc, sid, t)
             vc.play(source)
@@ -124,11 +124,11 @@ async def on_ready():
 
 # prefix登録処理
 @client.command()
-async def set_prefix(ctx,prefix):
+async def set_prefix(ctx,prefix='.'):
 
     sid = str(ctx.guild.id)
     data = await sb.get_json(prefix_path)
-    before_prefix = data.get(sid,'.')
+    before_prefix = data.get(sid, '.')
     data[sid] = prefix  # 辞書内で prefix を変更しておく
 
     await sb.set_json(prefix_path, data)
@@ -298,7 +298,15 @@ async def on_message(message):
                 conf = data.get(str(message.author.id),dc)
                 cv = conf.get('cv')
                 x = conf.get('x')
-                msg = message.content
+                bmsg = message.content.encode('shift_jis','xmlcharrefreplace')
+                msg = bmsg.decode('shift_jis')
+                delmsgs = re.findall(r'&#(\w*);', msg)
+                if delmsgs:
+                    for delmsg in delmsgs:
+                        msg = re.sub(f'&#{delmsg};',' ', msg)
+                msg = msg.replace('　', ' ')
+                while msg.startswith(' '):
+                    msg = msg.lstrip(' ')
                 userids = re.findall('<@!(.*)>', msg)
                 roleids = re.findall('<@&(.*)>', msg)
                 if userids:
@@ -310,8 +318,8 @@ async def on_message(message):
                         role = message.guild.get_role(int(roleid)).name
                         msg = re.sub(f'<@&{roleid}>',role,msg)
                 t = str(time.perf_counter()).replace('.', '')
-                await add_oplist(sid, t)
                 if creat_WAV(msg, sid, cv, x, t):
+                    await add_oplist(sid, t)
                     times = LengthMusic(f'{DCTB}guild/{sid}/{t}output.wav')
                     source = discord.FFmpegPCMAudio(f'{DCTB}guild/{sid}/{t}output.wav')
                     await chk_play(message.guild.voice_client, sid, t)
