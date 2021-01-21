@@ -4,6 +4,7 @@ import os
 import json
 import aiofiles
 import settings
+import unicodedata
 
 DSCT = settings.DSCT
 OPJT = settings.OPJT
@@ -33,39 +34,46 @@ def user_custam(text,sid):
 
     filepath = f'{DCTB}guild/{sid}/dic.txt'
     if os.path.isfile(filepath):
-        f = open(filepath, 'r')
-        line = f.readline()
+        with open(filepath, 'r') as f:
+            for line in f:
+                pattern = line.split(',')
+                if pattern[0] in text and len(pattern) >= 2:
+                    text = text.replace(pattern[0], pattern[1].replace('\n', '' ))
 
-        while line:
-            pattern = line.strip().split(',')
-            if pattern[0] in text and len(pattern) >= 2:
-                text = text.replace(pattern[0], pattern[1])
-                break
-            else:
-                line = f.readline()
-
-        f.close()
     else:
         pass
 
     return text
 
+# is_japanese
+# 日本語判定
+def is_japanese(string):
+    for ch in string:
+        name = unicodedata.name(ch) 
+        if "CJK UNIFIED" in name \
+        or "HIRAGANA" in name \
+        or "KATAKANA" in name:
+            return True
+    return False
+
 # creat_WAV
 # message.contentをテキストファイルに書き込み
-def creat_WAV(inputText, sid, cv, r, t):
+def creat_WAV(inputText, sid, cv, r, t, l):
 
     inputText = remove_custom_emoji(inputText)   # 絵文字IDは読み上げない
     inputText = urlAbb(inputText)   # URLなら省略
     inputText = remove_picture(inputText)   # 画像なら読み上げない
     inputText = user_custam(inputText, sid)   # ユーザ登録した文字を読み替える
-    text_check = re.sub(r"[ 　\n]", "", inputText)
 
-    if len(text_check) != 0:
-        input_file = f'{DCTB}guild/{sid}/{t}input.txt'
+    jpchk = is_japanese(inputText)
+    alpnumchk = bool(re.search(r'[a-zA-Z0-9]', inputText))
+
+    if jpchk or alpnumchk:
+        input_file = f'{DCTB}guild/{sid}/{t}{l}input.txt'
         print(input_file)
 
         with open(input_file,'w',encoding='shift_jis') as file:
-            file.write(inputText.replace( '\n' , '　' ))
+            file.write(inputText)
 
         #辞書のPath
         x = f'{OPJT}dic/'
@@ -74,7 +82,7 @@ def creat_WAV(inputText, sid, cv, r, t):
         m = f'{OPJT}{cv}.htsvoice'
 
         #出力ファイル名 and Path
-        ow = f'{DCTB}guild/{sid}/{t}output.wav'
+        ow = f'{DCTB}guild/{sid}/{t}{l}output.wav'
 
         #r is voice speed
         args = {'x':x, 'm':m, 'r':r, 'ow':ow, 'input_file':input_file}
@@ -85,5 +93,6 @@ def creat_WAV(inputText, sid, cv, r, t):
 
         subprocess.run(cmd)
         return True
+
     else:
         return False

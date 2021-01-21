@@ -6,13 +6,15 @@ async def get_helptext(prefix, name, txt):
     return f'テキストチャンネル（以下TC）に入力された文字列をボイスチャンネル（以下VC）へ音声で出力するBotです。\n' \
         + f'読み上げ対象はjoinコマンドを入力されたTC→Botの居るVCです。\n' \
         + f'Bot以外のVC参加者が居なくなった場合は自動的に切断されます。\n' \
-        + f'{prefix}set_prefix arg1 : prefixをarg1に変更します。\n' \
-        + f'{prefix}cv arg1 arg2（省略可能） : コマンド入力した人の読み上げ音声をarg1、読み上げ速度をarg2（標準は1.0）で登録します。\n' \
-        + f'{prefix}ad arg1 arg2 : arg1の読みをarg2で辞書登録します。\n' \
-        + f'{prefix}cvlist : 登録済み読み上げ音声の一覧を表示します。左がcvのarg1で使用可能な情報、右が音声ファイル名です。\n' \
         + f'{prefix}join : コマンド入力した人が居るVCへ接続し、読み上げを開始します。\n' \
-        + f'{prefix}ch_entry_info : 接続VC内の入退室情報読み上げ状態を変更します。現在は{txt}です。\n' \
         + f'{prefix}bye : VCから退室します。\n' \
+        + f'{prefix}ch_entry_info : 接続VC内の入退室情報読み上げ状態を変更します。現在は{txt}です。\n' \
+        + f'{prefix}set_prefix arg : prefixをargに変更します。\n' \
+        + f'{prefix}cv arg1 arg2（省略可能） : コマンド入力した人の読み上げ音声をarg1、読み上げ速度をarg2（標準は1.0）で登録します。\n' \
+        + f'{prefix}cvlist : 登録済み読み上げ音声の一覧を表示します。左がcvのarg1で使用可能な情報、右が音声ファイル名です。\n' \
+        + f'{prefix}ad arg1 arg2 : arg1の読みをarg2で辞書登録します。\n' \
+        + f'{prefix}de arg : 辞書からargを削除します。\n' \
+        + f'{prefix}chk_dic : 辞書に登録されている内容を確認します。 ※管理者限定\n' \
         + f'※現在の{name}のprefixは{prefix}です。'
 
 # get_cptext
@@ -47,6 +49,21 @@ async def get_entrytext(name):
 # 辞書登録時メッセージ作成
 async def get_adtext(arg1, arg2):
     return f'`{arg1}` を `{arg2}` として登録しました'
+
+# get_notadtext
+# 辞書登録時メッセージ作成
+async def get_notadtext(arg1):
+    return f'`{arg1}` は既に辞書登録済みです'
+
+# get_detext
+# 辞書削除時メッセージ作成
+async def get_detext(arg1):
+    return f'辞書から `{arg1}` を削除しました'
+
+# get_notdetext
+# 辞書削除時メッセージ作成
+async def get_notdetext(arg1):
+    return f'`{arg1}` は辞書に存在しませんでした'
 
 # get_acttext
 # ステータス表示情報作成

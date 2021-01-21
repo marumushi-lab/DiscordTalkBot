@@ -72,7 +72,6 @@ async def chk_play(vc, sid, t, f='cre'):
                     break
                 else:
                     await pop_oplist(sid)
-                    sb.del_file(f'{DCTB}guild/{sid}/{t}')
                     break
             else:
                 pass
@@ -88,11 +87,15 @@ async def iocheck(sid, vc, msg):
     iolog = data.get(sid,'t')
     if iolog == 't':
         t = str(time.perf_counter()).replace('.', '')
-        if creat_WAV(msg, sid, 'f001', '1.0', t):
-            await add_oplist(sid, t)
-            source = discord.FFmpegPCMAudio(f'{DCTB}guild/{sid}/{t}output.wav')
+        l = 1
+        await add_oplist(sid, t)
+        if creat_WAV(msg, sid, 'f001', '1.0', t, l):
+            times = LengthMusic(f'{DCTB}guild/{sid}/{t}{l}output.wav')
+            source = discord.FFmpegPCMAudio(f'{DCTB}guild/{sid}/{t}{l}output.wav')
             await chk_play(vc, sid, t)
             vc.play(source)
+            time.sleep(times)
+            sb.del_file(f'{DCTB}guild/{sid}/{t}{l}')
             await chk_play(vc, sid, t, 'del')
 
 # disconnect
@@ -190,13 +193,53 @@ async def cvlist(ctx):
     await ctx.channel.send(txt)
 
 @client.command()
-async def ad(ctx, arg1, arg2):
+async def chk_dic(ctx):
+    if ctx.author.guild_permissions.administrator:
+        sid = str(ctx.guild.id)
+        filepath = f'{DCTB}guild/{sid}/dic.txt'
+        with open(filepath, mode='r') as f:
+            contents = f.read()
+        await ctx.channel.send(contents)
+    else:
+        await ctx.channel.send('chk_dicコマンドは管理者限定のコマンドです。')
 
+@client.command()
+async def ad(ctx, arg1, arg2):
+    fl = False
     sid = str(ctx.guild.id)
     filepath = f'{DCTB}guild/{sid}/dic.txt'
-    with open(filepath, mode='a') as f:
-        f.write(f'\n{arg1},{arg2}')
-    ctx.send(await lt.get_adtext(arg1, arg2))
+    if os.path.isfile(filepath):
+        with open(filepath, mode='r') as f:
+            lines = f.readlines()
+        for line in lines:
+            if line.startswith(f'{arg1},'):
+                fl = True
+                break
+    if fl:
+        await ctx.send(await lt.get_notadtext(arg1))
+    else:
+        with open(filepath, mode='a') as f:
+            f.write(f'{arg1},{arg2}\n')
+        await ctx.send(await lt.get_adtext(arg1, arg2))
+
+@client.command()
+async def de(ctx, arg1):
+    fl = False
+    sid = str(ctx.guild.id)
+    filepath = f'{DCTB}guild/{sid}/dic.txt'
+    with open(filepath,"r+") as f:
+        new_f = f.readlines()
+        f.seek(0)
+        for line in new_f:
+            if line.startswith(f'{arg1},'):
+                fl = True
+            else:
+                f.write(line)
+        f.truncate()
+    if fl:
+        await ctx.send(await lt.get_detext(arg1))
+    else:
+        await ctx.send(await lt.get_notdetext(arg1))
 
 @client.command()
 async def ch_entry_info(ctx):
@@ -258,9 +301,10 @@ async def on_voice_state_update(member, before, after):
                         await del_oplist(sid)
 
                     else:
-                        if before.channel.id != after.channel.id:
-                            msg = await lt.get_exittext(name)
-                            await iocheck(sid, vc, msg)
+                        if after.channel is not None:
+                            if before.channel.id != after.channel.id:
+                                msg = await lt.get_exittext(name)
+                                await iocheck(sid, vc, msg)
 
                 else:
                     if after.channel is not None:
@@ -317,14 +361,24 @@ async def on_message(message):
                     for roleid in roleids:
                         role = message.guild.get_role(int(roleid)).name
                         msg = re.sub(f'<@&{roleid}>',role,msg)
+                msglist = msg.splitlines()
                 t = str(time.perf_counter()).replace('.', '')
-                if creat_WAV(msg, sid, cv, x, t):
-                    await add_oplist(sid, t)
-                    times = LengthMusic(f'{DCTB}guild/{sid}/{t}output.wav')
-                    source = discord.FFmpegPCMAudio(f'{DCTB}guild/{sid}/{t}output.wav')
-                    await chk_play(message.guild.voice_client, sid, t)
-                    message.guild.voice_client.play(source)
-                    time.sleep(times)
+                await add_oplist(sid, t)
+                l =0
+                for msg in msglist:
+                    l += 1
+                    if creat_WAV(msg, sid, cv, x, t, l):
+                        if os.path.getsize(f'{DCTB}guild/{sid}/{t}{l}output.wav') == 0:
+                            sb.del_file(f'{DCTB}guild/{sid}/{t}{l}')
+                            await message.channel.send('読み上げ不可能な文字列のみでした。辞書登録をお願いします。')
+                        else:
+                            times = LengthMusic(f'{DCTB}guild/{sid}/{t}{l}output.wav')
+                            source = discord.FFmpegPCMAudio(f'{DCTB}guild/{sid}/{t}{l}output.wav')
+                            await chk_play(message.guild.voice_client, sid, t)
+                            message.guild.voice_client.play(source)
+                            time.sleep(times)
+                            sb.del_file(f'{DCTB}guild/{sid}/{t}{l}')
+                else:
                     await chk_play(message.guild.voice_client, sid, t, 'del')
 
 client.run(DSCT)
