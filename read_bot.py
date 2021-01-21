@@ -77,7 +77,7 @@ async def chk_play(vc, sid, t, f='cre'):
                 pass
         else:
             pass
-        time.sleep(1)
+        await asyncio.sleep(1)
     return
 
 # iocheck
@@ -94,7 +94,7 @@ async def iocheck(sid, vc, msg):
             source = discord.FFmpegPCMAudio(f'{DCTB}guild/{sid}/{t}{l}output.wav')
             await chk_play(vc, sid, t)
             vc.play(source)
-            time.sleep(times)
+            await asyncio.sleep(times)
             sb.del_file(f'{DCTB}guild/{sid}/{t}{l}')
             await chk_play(vc, sid, t, 'del')
 
@@ -376,7 +376,7 @@ async def on_message(message):
                             source = discord.FFmpegPCMAudio(f'{DCTB}guild/{sid}/{t}{l}output.wav')
                             await chk_play(message.guild.voice_client, sid, t)
                             message.guild.voice_client.play(source)
-                            time.sleep(times)
+                            await asyncio.sleep(times)
                             sb.del_file(f'{DCTB}guild/{sid}/{t}{l}')
                 else:
                     await chk_play(message.guild.voice_client, sid, t, 'del')
