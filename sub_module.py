@@ -22,10 +22,10 @@ async def chk_config(sid, DCTB):
 
 # common_disconnect
 # 切断時共通処理
-async def common_disconnect(sid, filepath):
+async def common_disconnect(sid, filepath, gname):
     data = await get_json(filepath)
     delete = data.pop(sid)  # sidを削除
-    print(f'{delete}から退出')
+    print(f'{gname}:{delete}から退出')
     await set_json(filepath, data)
 
 # get_json

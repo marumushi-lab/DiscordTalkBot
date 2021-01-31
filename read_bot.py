@@ -14,6 +14,7 @@ import settings
 import longtext as lt
 import sub_module as sb
 from collections import deque
+import discord
 
 DSCT = settings.DSCT
 OPJT = settings.OPJT
@@ -100,14 +101,14 @@ async def iocheck(sid, vc, msg):
 
 # disconnect
 # 切断処理
-async def disconnect(vc,sid):
+async def disconnect(vc, sid, gname):
     await vc.disconnect()
-    await sb.common_disconnect(sid, channel_path)
+    await sb.common_disconnect(sid, channel_path, gname)
     await del_oplist(sid)
 
 # prefix_from_json
 # prefix変更用処理
-async def prefix_from_json(bot,message):
+async def prefix_from_json(bot, message):
 
     data = await sb.get_json(prefix_path)
 
@@ -162,7 +163,8 @@ async def bye(ctx):
     print('#切断')
     sid = str(ctx.guild.id)
     vc = ctx.voice_client
-    await disconnect(vc, sid)
+    gname = ctx.guild.name
+    await disconnect(vc, sid, gname)
 
 @client.command()
 async def help(ctx):
@@ -285,6 +287,8 @@ async def on_voice_state_update(member, before, after):
         vc = member.guild.voice_client
         sid = str(member.guild.id)
         name = member.display_name
+        gname = member.guild.name
+
         if vc.is_connected():
             if before.channel is not None:
                 if vc.channel.id == before.channel.id:
@@ -297,7 +301,7 @@ async def on_voice_state_update(member, before, after):
                             channel = client.get_channel(int(cid))
                             await channel.send('ご利用ありがとうございました。')
                         await vc.disconnect()
-                        await sb.common_disconnect(sid, channel_path)
+                        await sb.common_disconnect(sid, channel_path, gname)
                         await del_oplist(sid)
 
                     else:

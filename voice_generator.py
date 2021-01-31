@@ -70,7 +70,6 @@ def creat_WAV(inputText, sid, cv, r, t, l):
 
     if jpchk or alpnumchk:
         input_file = f'{DCTB}guild/{sid}/{t}{l}input.txt'
-        print(input_file)
 
         with open(input_file,'w',encoding='shift_jis') as file:
             file.write(inputText)
