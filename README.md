@@ -29,10 +29,9 @@ Defaultのprefixは"."となっています。
 - Discord.py 1.6.0  
 - python-dotenv 0.15.0  
 - その他必要に応じたライブラリ
-　aiofiles
-　ffmpeg
-　PyNaCl
-
+aiofiles
+ffmpeg
+PyNaCl
 python-dotenv
 
 ## 使い方
