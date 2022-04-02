@@ -2,7 +2,7 @@
 Discord readout bot using open_jtalk-1.11  
 Because the developer is an idiot, this README is only available in Japanese.  
 
-# 仕様の変更に伴い動かなくなったため現在調整中  
+# 仕様の変更に伴いDeveloper Portal内のPrivileged Gateway Intentsで各トグルをONにしてください
 
 ## Discord内のテキストチャンネルに入力された内容をボイスチャンネルで音声出力するBot  
 有名なPublicの読み上げBotに負荷が掛かり過ぎ、使用出来ない事が増えてきたため  
